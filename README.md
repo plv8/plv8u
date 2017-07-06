@@ -1,9 +1,12 @@
-PL/v8 - A Procedural Language in JavaScript powered by V8
+PL/v8U - A Procedural Language in JavaScript powered by V8 (Untrusted)
 =================================================
 
 PL/v8 is a shared library that provides a PostgreSQL procedural language powered
 by V8 JavaScript Engine.  With this program you can write in JavaScript your
 function that is callable from SQL.
+
+This is the Untrusted version, which is a work in progress.  You should likely
+be using [PL/v8](https://github.com/plv8/plv8).
 
 ## Documentation
 The documentation covers the following implemented features:
@@ -29,8 +32,8 @@ The documentation covers the following implemented features:
 - [Dialects](/doc/plv8.md#dialects)
 
 ## Notes:
-PL/v8 is hosted on github at:
-https://github.com/plv8/plv8
+PL/v8U is hosted on github at:
+https://github.com/plv8/plv8U
 
-PL/v8 is distributed by PGXN.  For more detail, see:
-http://pgxn.org/dist/plv8/doc/plv8.html
+PL/v8U is distributed by PGXN.  For more detail, see:
+http://pgxn.org/dist/plv8/doc/plv8u.html

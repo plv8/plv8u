@@ -1,8 +1,8 @@
 {
-    "name": "plv8",
-    "abstract": "A procedural language in JavaScript powered by V8",
-    "description": "plv8 is a trusted procedural language that is safe to use, fast to run and easy to develop.",
-    "version": "2.1.0",
+    "name": "plv8u",
+    "abstract": "A procedural language in JavaScript powered by V8 (Untrusted)",
+    "description": "plv8u is an untrusted procedural language that is safe to use, fast to run and easy to develop.",
+    "version": "0.1.0-dv",
     "maintainer": [
         "Jerry Sievert <code@legitimatesounding.com>"
     ],
@@ -22,33 +22,21 @@
         }
     },
     "provides": {
-        "plv8": {
-            "file": "plv8--2.1.0.sql",
+        "plv8u": {
+            "file": "plv8u--0.1.0-dev.sql",
             "docfile": "doc/plv8.md",
-            "version": "2.0.3-dev",
+            "version": "0.1.0-dev",
             "abstract": "A procedural language in JavaScript"
-         },
-        "plcoffee": {
-            "file": "plcoffee--2.1.0.sql",
-            "docfile": "doc/plv8.md",
-            "version": "2.0.3-dev",
-            "abstract": "A procedural language in CoffeeScript"
-         },
-        "plls": {
-            "file": "plls--2.1.0.sql",
-            "docfile": "doc/plv8.md",
-            "version": "2.0.3-dev",
-            "abstract": "A procedural language in LiveScript"
          }
     },
     "resources": {
-        "homepage": "https://github.com/plv8/plv8",
+        "homepage": "https://github.com/plv8/plv8u",
         "bugtracker": {
-            "web": "https://github.com/plv8/plv8/issues"
+            "web": "https://github.com/plv8/plv8u/issues"
         },
         "repository": {
-            "url":  "https://github.com/plv8/plv8",
-            "web":  "https://github.com/plv8/plv8.git",
+            "url":  "https://github.com/plv8/plv8u",
+            "web":  "https://github.com/plv8/plv8u.git",
             "type": "git"
         }
     },
@@ -59,6 +47,7 @@
     "tags": [
        "PL",
        "JavaScript",
-       "v8"
+       "v8",
+       "untrusted"
     ]
 }

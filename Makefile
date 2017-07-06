@@ -12,7 +12,7 @@
 #   'make static' will download v8 and build, then statically link to it.
 #
 #-----------------------------------------------------------------------------#
-PLV8_VERSION = 2.1.0
+PLV8_VERSION = 0.1.0-dev
 
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
@@ -22,26 +22,16 @@ PG_VERSION_NUM := $(shell cat `$(PG_CONFIG) --includedir-server`/pg_config*.h \
 
 # set your custom C++ compler
 CUSTOM_CC = g++
-JSS  = coffee-script.js livescript.js
-# .cc created from .js
-JSCS = $(JSS:.js=.cc)
 SRCS = plv8.cc plv8_type.cc plv8_func.cc plv8_param.cc $(JSCS)
 OBJS = $(SRCS:.cc=.o)
-MODULE_big = plv8
-EXTENSION = plv8
-PLV8_DATA = plv8.control plv8--$(PLV8_VERSION).sql
+MODULE_big = plv8u
+EXTENSION = plv8u
+PLV8_DATA = plv8u.control plv8--$(PLV8_VERSION).sql
 
 DATA = $(PLV8_DATA)
-ifndef DISABLE_DIALECT
-DATA += plcoffee.control plcoffee--$(PLV8_VERSION).sql \
-		plls.control plls--$(PLV8_VERSION).sql
-endif
 DATA_built = plv8.sql
 REGRESS = init-extension plv8 plv8-errors inline json startup_pre startup varparam json_conv \
  		  jsonb_conv window guc es6 arraybuffer composites currentresource
-ifndef DISABLE_DIALECT
-REGRESS += dialect
-endif
 
 SHLIB_LINK += -lv8
 ifdef V8_OUTDIR
@@ -50,15 +40,6 @@ else
 SHLIB_LINK += -lv8_libplatform
 endif
 
-
-# v8's remote debugger is optional at the moment, since we don't know
-# how much of the v8 installation is built with debugger enabled.
-ifdef ENABLE_DEBUGGER_SUPPORT
-OPT_ENABLE_DEBUGGER_SUPPORT = -DENABLE_DEBUGGER_SUPPORT
-endif
-
-# for older g++ (e.g. 4.6.x), which do not support c++11
-#OPTFLAGS = -O2 -std=gnu++0x -fno-rtti
 
 OPTFLAGS = -O2 -std=c++11 -fno-rtti
 
@@ -85,14 +66,6 @@ plv8_config.h: plv8_config.h.in Makefile
 %.o : %.cc plv8_config.h plv8.h
 	$(CUSTOM_CC) $(CCFLAGS) $(CPPFLAGS) -fPIC -c -o $@ $<
 
-# Convert .js to .cc
-$(JSCS): %.cc: %.js
-	echo "extern const unsigned char $(subst -,_,$(basename $@))_binary_data[] = {" >$@
-ifndef DISABLE_DIALECT
-	(od -txC -v $< | \
-	sed -e "s/^[0-9]*//" -e s"/ \([0-9a-f][0-9a-f]\)/0x\1,/g" -e"\$$d" ) >>$@
-endif
-	echo "0x00};" >>$@
 
 # VERSION specific definitions
 ifeq ($(shell test $(PG_VERSION_NUM) -ge 90100 && echo yes), yes)
