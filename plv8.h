@@ -270,5 +270,6 @@ extern v8::Handle<v8::Function> CreateYieldFunction(Converter *conv, Tuplestores
 extern void Subtransaction(const v8::FunctionCallbackInfo<v8::Value>& info) throw();
 
 extern void SetupPlv8Functions(v8::Handle<v8::ObjectTemplate> plv8);
+extern void SetupPlv8uFunctions(v8::Handle<v8::ObjectTemplate> plv8);
 
 #endif	// _PLV8_

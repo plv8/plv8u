@@ -17,7 +17,7 @@ CREATE FUNCTION @LANG_NAME@_inline_handler(internal) RETURNS void
 CREATE FUNCTION @LANG_NAME@_call_validator(oid) RETURNS void
 	AS 'MODULE_PATHNAME' LANGUAGE C;
 
-CREATE TRUSTED LANGUAGE @LANG_NAME@
+CREATE LANGUAGE @LANG_NAME@
 	HANDLER @LANG_NAME@_call_handler
 #if PG_VERSION_NUM >= 90000
 	INLINE @LANG_NAME@_inline_handler
@@ -25,16 +25,16 @@ CREATE TRUSTED LANGUAGE @LANG_NAME@
 	VALIDATOR @LANG_NAME@_call_validator;
 
 #ifdef LANG_plv8
-CREATE DOMAIN plv8_int2array AS int2[];
-CREATE DOMAIN plv8_int4array AS int4[];
-CREATE DOMAIN plv8_float4array AS float4[];
-CREATE DOMAIN plv8_float8array AS float8[];
+CREATE DOMAIN plv8u_int2array AS int2[];
+CREATE DOMAIN plv8u_int4array AS int4[];
+CREATE DOMAIN plv8u_float4array AS float4[];
+CREATE DOMAIN plv8u_float8array AS float8[];
 
-CREATE OR REPLACE FUNCTION plv8_version ( )
+CREATE OR REPLACE FUNCTION plv8u_version ( )
 RETURNS TEXT AS
 $$
-	return "@PLV8_VERSION@";
-$$ LANGUAGE plv8;
+	return "@PLV8U_VERSION@";
+$$ LANGUAGE plv8u;
 
 #endif
 

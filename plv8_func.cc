@@ -7,6 +7,7 @@
  */
 #include "plv8.h"
 #include "plv8_param.h"
+#include "helpers/file.h"
 #include <string>
 
 extern "C" {
@@ -16,6 +17,8 @@ extern "C" {
 #include "parser/parse_type.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
+
+#include <errno.h>
 } // extern "C"
 
 using namespace v8;
