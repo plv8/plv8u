@@ -30,29 +30,17 @@ extern "C" {
 
 PG_MODULE_MAGIC;
 
-PG_FUNCTION_INFO_V1(plv8_call_handler);
-PG_FUNCTION_INFO_V1(plv8_call_validator);
-PG_FUNCTION_INFO_V1(plcoffee_call_handler);
-PG_FUNCTION_INFO_V1(plcoffee_call_validator);
-PG_FUNCTION_INFO_V1(plls_call_handler);
-PG_FUNCTION_INFO_V1(plls_call_validator);
+PG_FUNCTION_INFO_V1(plv8u_call_handler);
+PG_FUNCTION_INFO_V1(plv8u_call_validator);
 
-Datum	plv8_call_handler(PG_FUNCTION_ARGS);
-Datum	plv8_call_validator(PG_FUNCTION_ARGS);
-Datum	plcoffee_call_handler(PG_FUNCTION_ARGS);
-Datum	plcoffee_call_validator(PG_FUNCTION_ARGS);
-Datum	plls_call_handler(PG_FUNCTION_ARGS);
-Datum	plls_call_validator(PG_FUNCTION_ARGS);
+Datum	plv8u_call_handler(PG_FUNCTION_ARGS);
+Datum	plv8u_call_validator(PG_FUNCTION_ARGS);
 
 void _PG_init(void);
 
 #if PG_VERSION_NUM >= 90000
-PG_FUNCTION_INFO_V1(plv8_inline_handler);
-PG_FUNCTION_INFO_V1(plcoffee_inline_handler);
-PG_FUNCTION_INFO_V1(plls_inline_handler);
-Datum	plv8_inline_handler(PG_FUNCTION_ARGS);
-Datum	plcoffee_inline_handler(PG_FUNCTION_ARGS);
-Datum	plls_inline_handler(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(plv8u_inline_handler);
+Datum	plv8u_inline_handler(PG_FUNCTION_ARGS);
 #endif
 } // extern "C"
 
@@ -119,8 +107,6 @@ static HTAB *plv8_proc_cache_hash = NULL;
 
 static plv8_exec_env		   *exec_env_head = NULL;
 
-extern const unsigned char coffee_script_binary_data[];
-extern const unsigned char livescript_binary_data[];
 
 class Plv8ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
  public:
@@ -241,7 +227,7 @@ _PG_init(void)
 	plv8_proc_cache_hash = hash_create("PLv8 Procedures", 32,
 									   &hash_ctl, HASH_ELEM | HASH_FUNCTION);
 
-	DefineCustomStringVariable("plv8.start_proc",
+	DefineCustomStringVariable("plv8u.start_proc",
 							   gettext_noop("PLV8 function to run once when PLV8 is first used."),
 							   NULL,
 							   &plv8_start_proc,
@@ -253,7 +239,7 @@ _PG_init(void)
 							   NULL,
 							   NULL);
 
-	DefineCustomStringVariable("plv8.icu_data",
+	DefineCustomStringVariable("plv8u.icu_data",
 								 gettext_noop("ICU data file directory."),
 								 NULL,
 								 &plv8_icu_data,
@@ -265,7 +251,7 @@ _PG_init(void)
 								 NULL,
 								 NULL);
 
-	DefineCustomStringVariable("plv8.v8_flags",
+	DefineCustomStringVariable("plv8u.v8_flags",
 							   gettext_noop("V8 engine initialization flags (e.g. --es_staging for additional ES6 features)."),
 							   NULL,
 							   &plv8_v8_flags,
@@ -277,7 +263,7 @@ _PG_init(void)
 							   NULL,
 							   NULL);
 
-	DefineCustomIntVariable("plv8.debugger_port",
+	DefineCustomIntVariable("plv8u.debugger_port",
 							gettext_noop("V8 remote debug port."),
 							gettext_noop("The default value is 35432.  "
 										 "This is effective only if PLV8 is built with ENABLE_DEBUGGER_SUPPORT."),
@@ -396,22 +382,11 @@ common_pl_call_handler(PG_FUNCTION_ARGS, Dialect dialect) throw()
 }
 
 Datum
-plv8_call_handler(PG_FUNCTION_ARGS)
+plv8u_call_handler(PG_FUNCTION_ARGS)
 {
 	return common_pl_call_handler(fcinfo, PLV8_DIALECT_NONE);
 }
 
-Datum
-plcoffee_call_handler(PG_FUNCTION_ARGS)
-{
-	return common_pl_call_handler(fcinfo, PLV8_DIALECT_COFFEE);
-}
-
-Datum
-plls_call_handler(PG_FUNCTION_ARGS)
-{
-	return common_pl_call_handler(fcinfo, PLV8_DIALECT_LIVESCRIPT);
-}
 
 #if PG_VERSION_NUM >= 90000
 static Datum
@@ -444,22 +419,11 @@ common_pl_inline_handler(PG_FUNCTION_ARGS, Dialect dialect) throw()
 }
 
 Datum
-plv8_inline_handler(PG_FUNCTION_ARGS)
+plv8u_inline_handler(PG_FUNCTION_ARGS)
 {
 	return common_pl_inline_handler(fcinfo, PLV8_DIALECT_NONE);
 }
 
-Datum
-plcoffee_inline_handler(PG_FUNCTION_ARGS)
-{
-	return common_pl_inline_handler(fcinfo, PLV8_DIALECT_COFFEE);
-}
-
-Datum
-plls_inline_handler(PG_FUNCTION_ARGS)
-{
-	return common_pl_inline_handler(fcinfo, PLV8_DIALECT_LIVESCRIPT);
-}
 #endif
 
 /*
@@ -839,21 +803,9 @@ common_pl_call_validator(PG_FUNCTION_ARGS, Dialect dialect) throw()
 }
 
 Datum
-plv8_call_validator(PG_FUNCTION_ARGS)
+plv8u_call_validator(PG_FUNCTION_ARGS)
 {
 	return common_pl_call_validator(fcinfo, PLV8_DIALECT_NONE);
-}
-
-Datum
-plcoffee_call_validator(PG_FUNCTION_ARGS)
-{
-	return common_pl_call_validator(fcinfo, PLV8_DIALECT_COFFEE);
-}
-
-Datum
-plls_call_validator(PG_FUNCTION_ARGS)
-{
-	return common_pl_call_validator(fcinfo, PLV8_DIALECT_LIVESCRIPT);
 }
 
 static plv8_proc *
@@ -1093,24 +1045,6 @@ CompileDialect(const char *src, Dialect dialect)
 	Local<String>	key;
 	char		   *cresult;
 	const char	   *dialect_binary_data;
-
-	switch (dialect)
-	{
-		case PLV8_DIALECT_COFFEE:
-			if (coffee_script_binary_data[0] == '\0')
-				throw js_error("CoffeeScript is not enabled");
-			key = String::NewFromUtf8(plv8_isolate, "CoffeeScript", String::kInternalizedString);
-			dialect_binary_data = (const char *) coffee_script_binary_data;
-			break;
-		case PLV8_DIALECT_LIVESCRIPT:
-			if (livescript_binary_data[0] == '\0')
-				throw js_error("LiveScript is not enabled");
-			key = String::NewFromUtf8(plv8_isolate, "LiveScript", String::kInternalizedString);
-			dialect_binary_data = (const char *) livescript_binary_data;
-			break;
-		default:
-			throw js_error("Unknown Dialect");
-	}
 
 	if (ctx->Global()->Get(key)->IsUndefined())
 	{
@@ -1545,11 +1479,15 @@ GetGlobalObjectTemplate()
 		global.Reset(plv8_isolate, templ);
 
 		Handle<ObjectTemplate>	plv8 = ObjectTemplate::New();
+		Handle<ObjectTemplate>  plv8u = ObjectTemplate::New();
 
 		SetupPlv8Functions(plv8);
-		plv8->Set(String::NewFromUtf8(plv8_isolate, "version", String::kInternalizedString), String::NewFromUtf8(plv8_isolate, PLV8_VERSION));
+		SetupPlv8uFunctions(plv8u);
+
+		plv8->Set(String::NewFromUtf8(plv8_isolate, "version", String::kInternalizedString), String::NewFromUtf8(plv8_isolate, PLV8U_VERSION));
 
 		templ->Set(String::NewFromUtf8(plv8_isolate, "plv8", String::kInternalizedString), plv8);
+		templ->Set(String::NewFromUtf8(plv8_isolate, "plv8u", String::kInternalizedString), plv8u);
 	}
 	return Local<ObjectTemplate>::New(plv8_isolate, global);
 }
@@ -1886,4 +1824,3 @@ pg_error::rethrow() throw()
 	PG_RE_THROW();
 	exit(0);	// keep compiler quiet
 }
-

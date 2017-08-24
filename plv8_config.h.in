@@ -1,3 +1,3 @@
-#ifndef _PLV8_CONFIG_
-#undef PLV8_VERSION
+#ifndef _PLV8U_CONFIG_
+#undef PLV8U_VERSION
 #endif

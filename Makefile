@@ -12,7 +12,7 @@
 #   'make static' will download v8 and build, then statically link to it.
 #
 #-----------------------------------------------------------------------------#
-PLV8_VERSION = 0.1.0-dev
+PLV8U_VERSION = 0.1.0-dev
 
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
@@ -22,14 +22,16 @@ PG_VERSION_NUM := $(shell cat `$(PG_CONFIG) --includedir-server`/pg_config*.h \
 
 # set your custom C++ compler
 CUSTOM_CC = g++
-SRCS = plv8.cc plv8_type.cc plv8_func.cc plv8_param.cc $(JSCS)
+CC = gcc
+SRCS = plv8.cc plv8_type.cc plv8_func.cc plv8_param.cc plv8u_func.cc helpers/file.cc $(JSCS)
 OBJS = $(SRCS:.cc=.o)
+
 MODULE_big = plv8u
 EXTENSION = plv8u
-PLV8_DATA = plv8u.control plv8--$(PLV8_VERSION).sql
+PLV8U_DATA = plv8u.control plv8u--$(PLV8U_VERSION).sql
 
-DATA = $(PLV8_DATA)
-DATA_built = plv8.sql
+DATA = $(PLV8U_DATA)
+DATA_built = plv8u.sql
 REGRESS = init-extension plv8 plv8-errors inline json startup_pre startup varparam json_conv \
  		  jsonb_conv window guc es6 arraybuffer composites currentresource
 
@@ -61,7 +63,7 @@ endif
 all:
 
 plv8_config.h: plv8_config.h.in Makefile
-	sed -e 's/^#undef PLV8_VERSION/#define PLV8_VERSION "$(PLV8_VERSION)"/' $< > $@
+	sed -e 's/^#undef PLV8U_VERSION/#define PLV8U_VERSION "$(PLV8U_VERSION)"/' $< > $@
 
 %.o : %.cc plv8_config.h plv8.h
 	$(CUSTOM_CC) $(CCFLAGS) $(CPPFLAGS) -fPIC -c -o $@ $<
@@ -72,17 +74,17 @@ ifeq ($(shell test $(PG_VERSION_NUM) -ge 90100 && echo yes), yes)
 
 DATA_built =
 all: $(DATA)
-%--$(PLV8_VERSION).sql: plv8.sql.common
-	sed -e 's/@LANG_NAME@/$*/g' $< | sed -e 's/@PLV8_VERSION@/$(PLV8_VERSION)/g' | $(CC) -E -P $(CPPFLAGS) -DLANG_$* - > $@
-%.control: plv8.control.common
-	sed -e 's/@PLV8_VERSION@/$(PLV8_VERSION)/g' $< | $(CC) -E -P -DLANG_$* - > $@
+%--$(PLV8U_VERSION).sql: plv8u.sql.common
+	sed -e 's/@LANG_NAME@/$*/g' $< | sed -e 's/@PLV8U_VERSION@/$(PLV8U_VERSION)/g' | $(CC) -E -P $(CPPFLAGS) -DLANG_$* - > $@
+%.control: plv8u.control.common
+	sed -e 's/@PLV8U_VERSION@/$(PLV8U_VERSION)/g' $< | $(CC) -E -P -DLANG_$* - > $@
 subclean:
 	rm -f plv8_config.h $(DATA) $(JSCS)
 
 else
 
-DATA = uninstall_plv8.sql
-%.sql.in: plv8.sql.common
+DATA = uninstall_plv8u.sql
+%.sql.in: plv8u.sql.common
 	sed -e 's/@LANG_NAME@/$*/g' $< | $(CC) -E -P $(CPPFLAGS) -DLANG_$* - > $@
 subclean:
 	rm -f plv8_config.h *.sql.in $(JSCS)
@@ -141,7 +143,7 @@ endif
 
 integritycheck:
 ifneq ($(META_VER),)
-	test "$(META_VER)" = "$(PLV8_VERSION)"
+	test "$(META_VER)" = "$(PLV8U_VERSION)"
 endif
 
 installcheck: integritycheck

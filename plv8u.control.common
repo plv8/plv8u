@@ -1,0 +1,15 @@
+#if defined LANG_plv8u
+## plv8 extension
+comment = 'PL/JavaScript (v8) untrusted procedural language'
+#elif defined LANG_plcoffee
+## plcoffee extension
+comment = 'PL/CoffeeScript (v8) untrusted procedural language'
+#elif defined LANG_plls
+## plls extension
+comment = 'PL/LiveScript (v8) untrusted procedural language'
+#endif
+default_version = '@PLV8U_VERSION@'
+module_pathname = '$libdir/plv8u'
+relocatable = false
+schema = pg_catalog
+superuser = true
