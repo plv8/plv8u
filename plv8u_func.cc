@@ -178,18 +178,42 @@ static void plv8u_StatFile(const FunctionCallbackInfo<v8::Value>& args) {
 
 	Local<Object> object = Object::New(plv8_isolate);
 
-	object->Set(String::NewFromUtf8(plv8_isolate, "st_dev"), Number::New(plv8_isolate, status->stat_buf->st_dev));
-	object->Set(String::NewFromUtf8(plv8_isolate, "st_ino"), Number::New(plv8_isolate, status->stat_buf->st_ino));
-	object->Set(String::NewFromUtf8(plv8_isolate, "st_mode"), Number::New(plv8_isolate, status->stat_buf->st_mode));
-	object->Set(String::NewFromUtf8(plv8_isolate, "st_nlink"), Number::New(plv8_isolate, status->stat_buf->st_nlink));
-	object->Set(String::NewFromUtf8(plv8_isolate, "st_uid"), Number::New(plv8_isolate, status->stat_buf->st_uid));
-	object->Set(String::NewFromUtf8(plv8_isolate, "st_gid"), Number::New(plv8_isolate, status->stat_buf->st_gid));
-	object->Set(String::NewFromUtf8(plv8_isolate, "st_atimespec"), Number::New(plv8_isolate, status->stat_buf->st_atimespec.tv_nsec));
-	object->Set(String::NewFromUtf8(plv8_isolate, "st_mtimespec"), Number::New(plv8_isolate, status->stat_buf->st_mtimespec.tv_nsec));
-	object->Set(String::NewFromUtf8(plv8_isolate, "st_ctimespec"), Number::New(plv8_isolate, status->stat_buf->st_ctimespec.tv_nsec));
-	object->Set(String::NewFromUtf8(plv8_isolate, "st_size"), Number::New(plv8_isolate, status->stat_buf->st_size));
-	object->Set(String::NewFromUtf8(plv8_isolate, "st_blocks"), Number::New(plv8_isolate, status->stat_buf->st_blocks));
-	object->Set(String::NewFromUtf8(plv8_isolate, "st_blksize"), Number::New(plv8_isolate, status->stat_buf->st_blksize));
+	object->Set(String::NewFromUtf8(plv8_isolate, "dev"), Number::New(plv8_isolate, status->stat_buf->st_dev));
+	object->Set(String::NewFromUtf8(plv8_isolate, "ino"), Number::New(plv8_isolate, status->stat_buf->st_ino));
+	object->Set(String::NewFromUtf8(plv8_isolate, "mode"), Number::New(plv8_isolate, status->stat_buf->st_mode));
+	object->Set(String::NewFromUtf8(plv8_isolate, "nlink"), Number::New(plv8_isolate, status->stat_buf->st_nlink));
+	object->Set(String::NewFromUtf8(plv8_isolate, "uid"), Number::New(plv8_isolate, status->stat_buf->st_uid));
+	object->Set(String::NewFromUtf8(plv8_isolate, "gid"), Number::New(plv8_isolate, status->stat_buf->st_gid));
+	object->Set(String::NewFromUtf8(plv8_isolate, "size"), Number::New(plv8_isolate, status->stat_buf->st_size));
+	object->Set(String::NewFromUtf8(plv8_isolate, "blocks"), Number::New(plv8_isolate, status->stat_buf->st_blocks));
+	object->Set(String::NewFromUtf8(plv8_isolate, "blksize"), Number::New(plv8_isolate, status->stat_buf->st_blksize));
+
+#ifdef __APPLE__
+	object->Set(String::NewFromUtf8(plv8_isolate, "atimeMs"), Number::New(plv8_isolate, status->stat_buf->st_atimespec.tv_sec * 1000));
+	object->Set(String::NewFromUtf8(plv8_isolate, "mtimeMs"), Number::New(plv8_isolate, status->stat_buf->st_mtimespec.tv_sec * 1000));
+	object->Set(String::NewFromUtf8(plv8_isolate, "ctimeMs"), Number::New(plv8_isolate, status->stat_buf->st_ctimespec.tv_sec * 1000));
+	object->Set(String::NewFromUtf8(plv8_isolate, "atime"), Date::New(plv8_isolate, status->stat_buf->st_atimespec.tv_sec * 1000));
+	object->Set(String::NewFromUtf8(plv8_isolate, "mtime"), Date::New(plv8_isolate, status->stat_buf->st_mtimespec.tv_sec * 1000));
+	object->Set(String::NewFromUtf8(plv8_isolate, "ctime"), Date::New(plv8_isolate, status->stat_buf->st_ctimespec.tv_sec * 1000));
+#ifdef _DARWIN_FEATURE_64_BIT_INODE
+	object->Set(String::NewFromUtf8(plv8_isolate, "birthtimeMs"), Number::New(plv8_isolate, status->stat_buf->st_birthtimespec.tv_sec * 1000));
+	object->Set(String::NewFromUtf8(plv8_isolate, "birthtime"), Date::New(plv8_isolate, status->stat_buf->st_birthtimespec.tv_sec * 1000));
+#else
+	object->Set(String::NewFromUtf8(plv8_isolate, "birthtimeMs"), Number::New(plv8_isolate, 0));
+	object->Set(String::NewFromUtf8(plv8_isolate, "birthtime"), Date::New(plv8_isolate, 0));
+#endif
+#endif
+
+#ifdef __linux__
+	object->Set(String::NewFromUtf8(plv8_isolate, "atimeMs"), Number::New(plv8_isolate, status->stat_buf->st_atim.tv_sec * 1000));
+	object->Set(String::NewFromUtf8(plv8_isolate, "mtimeMs"), Number::New(plv8_isolate, status->stat_buf->st_mtim.tv_sec * 1000));
+	object->Set(String::NewFromUtf8(plv8_isolate, "ctimeMs"), Number::New(plv8_isolate, status->stat_buf->st_ctim.tv_sec * 1000));
+	object->Set(String::NewFromUtf8(plv8_isolate, "atimeMs"), Number::New(plv8_isolate, status->stat_buf->st_atim.tv_sec * 1000));
+	object->Set(String::NewFromUtf8(plv8_isolate, "mtimeMs"), Number::New(plv8_isolate, status->stat_buf->st_mtim.tv_sec * 1000));
+	object->Set(String::NewFromUtf8(plv8_isolate, "ctimeMs"), Number::New(plv8_isolate, status->stat_buf->st_ctim.tv_sec * 1000));
+	object->Set(String::NewFromUtf8(plv8_isolate, "birthtimeMs"), Number::New(plv8_isolate, 0));
+	object->Set(String::NewFromUtf8(plv8_isolate, "birthtime"), Date::New(plv8_isolate, 0));
+#endif
 
 	pfree(status);
 
