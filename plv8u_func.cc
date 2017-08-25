@@ -20,13 +20,14 @@ extern "C" {
 #include "utils/lsyscache.h"
 
 #include <errno.h>
-#include <stdio.h>
+#include <fcntl.h>
 } // extern "C"
 
 using namespace v8;
 
 extern v8::Isolate* plv8_isolate;
 static void plv8u_StatFile(const FunctionCallbackInfo<v8::Value>& args);
+static void plv8u_ReadFile(const FunctionCallbackInfo<v8::Value>& args);
 static void plv8_FunctionInvoker(const FunctionCallbackInfo<v8::Value>& args) throw();
 
 
@@ -61,11 +62,14 @@ SetupPlv8uFunctions(Handle<ObjectTemplate> plv8u)
 	PropertyAttribute	attrFull =
 		PropertyAttribute(ReadOnly | DontEnum | DontDelete);
 
-	Local<ObjectTemplate> object = ObjectTemplate::New(plv8_isolate);
+	Local<ObjectTemplate> internal = ObjectTemplate::New(plv8_isolate);
 
-	SetCallback(object, "stat", plv8u_StatFile, attrFull);
+	Local<ObjectTemplate> fs = ObjectTemplate::New(plv8_isolate);
+	SetCallback(fs, "stat", plv8u_StatFile, attrFull);
+	SetCallback(fs, "readFile", plv8u_ReadFile, attrFull);
 
-	plv8u->Set(String::NewFromUtf8(plv8_isolate, "_internal"), object);
+	internal->Set(String::NewFromUtf8(plv8_isolate, "fs"), fs);
+	plv8u->Set(String::NewFromUtf8(plv8_isolate, "_internal"), internal);
 
 	plv8u->SetInternalFieldCount(PLV8_INTNL_MAX);
 }
@@ -192,6 +196,84 @@ static void plv8u_StatFile(const FunctionCallbackInfo<v8::Value>& args) {
 	args.GetReturnValue().Set(object);
 }
 
-static void plv8u_OpenFile(const FunctionCallbackInfo<v8::Value>& args) {
+static void plv8u_ReadFile(const FunctionCallbackInfo<v8::Value>& args) {
+	Isolate* plv8_isolate = args.GetIsolate();
+	if (args.Length() < 1) {
+	    // Throw an Error that is passed back to JavaScript
+	    plv8_isolate->ThrowException(Exception::TypeError(
+	        String::NewFromUtf8(plv8_isolate, "path must be a string")));
+	    return;
+  }
 
+  // Check the argument types
+  if (!args[0]->IsString()) {
+	    plv8_isolate->ThrowException(Exception::TypeError(
+	        String::NewFromUtf8(plv8_isolate, "path must be a string")));
+	    return;
+  }
+
+	v8::String::Utf8Value s(args[0]);
+	std::string str(*s);
+	struct plv8u_file_status *status = read_file(str.c_str());
+
+	if (status->error) {
+		std::stringstream ss;
+		ss << "unable to open file or directory: '" << str.c_str() << "' " << strerror(status->error);
+		std::string ns = ss.str();
+		plv8_isolate->ThrowException(Exception::Error(
+			String::NewFromUtf8(plv8_isolate, ns.c_str())
+		));
+
+		return;
+	}
+
+	Local<String> ret = String::NewFromUtf8(plv8_isolate, (const char *) status->contents);
+
+	pfree(status->contents);
+	pfree(status);
+
+	args.GetReturnValue().Set(ret);
 }
+
+#if 0
+// work in progress, hence defined off
+static void plv8u_OpenFile(const FunctionCallbackInfo<v8::Value>& args) {
+	Isolate* plv8_isolate = args.GetIsolate();
+	if (args.Length() < 2) {
+			// Throw an Error that is passed back to JavaScript
+			plv8_isolate->ThrowException(Exception::Error(
+					String::NewFromUtf8(plv8_isolate, "Unkown file open flag: undefined")));
+			return;
+	}
+
+	// Check the argument types
+	if (!args[0]->IsString()) {
+			plv8_isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(plv8_isolate, "path must be a string")));
+			return;
+	}
+
+	if (!args[1]->IsString()) {
+			plv8_isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(plv8_isolate, "flag must be a string")));
+			return;
+	}
+
+	// path
+	v8::String::Utf8Value s(args[0]);
+	std::string path(*s);
+
+	// flags
+	v8::String::Utf8Value s2(args[1]);
+	std::string flags(*s2);
+
+	// mode, default to 0666
+	int mode = 0666;
+
+	if (args.Length() == 3) {
+		mode = args[2]->NumberValue();
+	}
+
+	int file = open(path.c_str(), )
+}
+#endif

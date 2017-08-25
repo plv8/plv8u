@@ -6,7 +6,7 @@
 struct plv8u_file_status {
   int error;
   struct stat *stat_buf;
-  unsigned char *contents;
+  char *contents;
 };
 
 struct plv8u_file_status *read_file (const char *);
