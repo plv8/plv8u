@@ -7,12 +7,12 @@
 # structure in v8 which may be different from version to another, but user
 # can specify the v8 version by AUTOV8_VERSION, too.
 #-----------------------------------------------------------------------------#
-AUTOV8_VERSION = 6.0.286.52
+AUTOV8_VERSION = 6.0.283
 AUTOV8_DIR = build/v8-git-mirror-$(AUTOV8_VERSION)
 AUTOV8_OUT = build/v8-git-mirror-$(AUTOV8_VERSION)/out/native
 AUTOV8_DEPOT_TOOLS = build/depot_tools
 AUTOV8_LIB = $(AUTOV8_OUT)/libv8_nosnapshot.a
-AUTOV8_STATIC_LIBS = libv8_base.a libv8_nosnapshot.a libv8_libplatform.a libv8_libbase.a libv8_libsampler.a libv8_builtins_setup.a libv8_builtins_generators.a libicui18n.a libicuuc.a
+AUTOV8_STATIC_LIBS = libv8_base.a libv8_nosnapshot.a libv8_libplatform.a libv8_libbase.a libv8_libsampler.a libicui18n.a libicuuc.a
 export PATH := $(abspath $(AUTOV8_DEPOT_TOOLS)):$(PATH)
 
 SHLIB_LINK += $(addprefix $(AUTOV8_OUT)/, $(AUTOV8_STATIC_LIBS))
@@ -39,12 +39,6 @@ $(AUTOV8_LIB): $(AUTOV8_DIR)
 	test -f $(AUTOV8_OUT)/libv8_base.a || \
 		ln -s $(abspath $(AUTOV8_OUT)/obj.target/src/libv8_base.a) \
 			$(AUTOV8_OUT)/libv8_base.a
-	test -f $(AUTOV8_OUT)/libv8_builtins_generators.a || \
-		ln -s $(abspath $(AUTOV8_OUT)/obj.target/src/libv8_builtins_generators.a) \
-			$(AUTOV8_OUT)/libv8_builtins_generators.a
-	test -f $(AUTOV8_OUT)/libv8_builtins_setup.a || \
-		ln -s $(abspath $(AUTOV8_OUT)/obj.target/src/libv8_builtins_setup.a) \
-			$(AUTOV8_OUT)/libv8_builtins_setup.a
 	test -f $(AUTOV8_OUT)/libv8_nosnapshot.a || \
 		ln -s $(abspath $(AUTOV8_OUT)/obj.target/src/libv8_nosnapshot.a) \
 			$(AUTOV8_OUT)/libv8_nosnapshot.a
